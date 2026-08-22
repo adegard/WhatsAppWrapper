@@ -188,8 +188,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         try {
-            ServiceWorkerController.getInstance().serviceWorkerClient =
-                object : ServiceWorkerClient() {
+            val workerController = ServiceWorkerController.getInstance()
+            workerController.setServiceWorkerClient(object : ServiceWorkerClient() {
                     override fun shouldInterceptRequest(
                         request: WebResourceRequest
                     ): WebResourceResponse? =
@@ -203,7 +203,7 @@ class MainActivity : AppCompatActivity() {
                         } else {
                             null
                         }
-                }
+                    })
         } catch (_: Exception) {
         }
     }
