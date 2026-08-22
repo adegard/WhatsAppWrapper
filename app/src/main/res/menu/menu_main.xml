@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_reload"
+        android:title="@string/reload"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_block_trackers"
+        android:checkable="true"
+        android:title="@string/block_trackers"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_lite_mode"
+        android:checkable="true"
+        android:title="@string/lite_mode"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_clear_session"
+        android:title="@string/clear_session"
+        app:showAsAction="never" />
+
+</menu>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WA Wrapper</string>
+    <string name="reload">Reload</string>
+    <string name="block_trackers">Block ads &amp; trackers</string>
+    <string name="lite_mode">Lite mode (skip media)</string>
+    <string name="clear_session">Log out &amp; clear session</string>
+    <string name="channel_unread">Unread messages</string>
+    <string name="channel_unread_desc">Shows the number of unread chats</string>
+    <string name="download_started">Downloading %1$s</string>
+    <string name="download_failed">Download failed</string>
+
+    <plurals name="unread_messages">
+        <item quantity="one">%d unread message</item>
+        <item quantity="other">%d unread messages</item>
+    </plurals>
+</resources>

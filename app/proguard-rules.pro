@@ -1,0 +1,2 @@
+-keepattributes JavascriptInterface
+-dontwarn android.webkit.**

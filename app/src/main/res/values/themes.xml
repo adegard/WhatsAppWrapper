@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.WAWrapper" parent="Theme.Material3.DayNight">
+        <item name="colorPrimary">@color/teal_dark</item>
+        <item name="colorSecondary">@color/green</item>
+        <item name="android:statusBarColor">@color/chat_bg</item>
+        <item name="android:navigationBarColor">@color/chat_bg</item>
+    </style>
+</resources>
