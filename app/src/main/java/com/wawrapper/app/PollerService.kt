@@ -92,59 +92,59 @@ class PollerService : Service() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView() {
-        webView = WebView(this).apply {
-            settings.apply {
-                javaScriptEnabled = true
-                domStorageEnabled = true
-                databaseEnabled = true
-                cacheMode = WebSettings.LOAD_DEFAULT
-                userAgentString = MainActivity.UA_DESKTOP
-                mediaPlaybackRequiresUserGesture = true
-                allowFileAccess = false
-                allowContentAccess = false
-                blockNetworkImage(liteMode())
-            }
+        val view = WebView(applicationContext)
 
-            CookieManager.getInstance().apply {
-                setAcceptCookie(true)
-                setAcceptThirdPartyCookies(this@apply, false)
-            }
-
-            webViewClient = object : WebViewClient() {
-                override fun shouldInterceptRequest(
-                    view: WebView,
-                    request: WebResourceRequest
-                ): WebResourceResponse? =
-                    if (AdBlocker.shouldBlock(request.url.toString(), blockTrackers(), liteMode())) {
-                        AdBlocker.emptyResponse()
-                    } else {
-                        null
-                    }
-            }
-
-            try {
-                ServiceWorkerController.getInstance().setServiceWorkerClient(
-                    object : ServiceWorkerClient() {
-                        override fun shouldInterceptRequest(
-                            request: WebResourceRequest
-                        ): WebResourceResponse? =
-                            if (AdBlocker.shouldBlock(
-                                    request.url.toString(),
-                                    blockTrackers(),
-                                    liteMode()
-                                )
-                            ) {
-                                AdBlocker.emptyResponse()
-                            } else {
-                                null
-                            }
-                    }
-                )
-            } catch (_: Exception) {
-            }
-
-            loadUrl(MainActivity.HOME_URL)
+        view.settings.apply {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            databaseEnabled = true
+            cacheMode = WebSettings.LOAD_DEFAULT
+            userAgentString = MainActivity.UA_DESKTOP
+            mediaPlaybackRequiresUserGesture = true
+            allowFileAccess = false
+            allowContentAccess = false
         }
+        view.setBlockNetworkImage(liteMode())
+
+        val cookieManager = CookieManager.getInstance()
+        cookieManager.setAcceptCookie(true)
+        cookieManager.setAcceptThirdPartyCookies(view, false)
+
+        view.webViewClient = object : WebViewClient() {
+            override fun shouldInterceptRequest(
+                view: WebView,
+                request: WebResourceRequest
+            ): WebResourceResponse? =
+                if (AdBlocker.shouldBlock(request.url.toString(), blockTrackers(), liteMode())) {
+                    AdBlocker.emptyResponse()
+                } else {
+                    null
+                }
+        }
+
+        try {
+            ServiceWorkerController.getInstance().setServiceWorkerClient(
+                object : ServiceWorkerClient() {
+                    override fun shouldInterceptRequest(
+                        request: WebResourceRequest
+                    ): WebResourceResponse? =
+                        if (AdBlocker.shouldBlock(
+                                request.url.toString(),
+                                blockTrackers(),
+                                liteMode()
+                            )
+                        ) {
+                            AdBlocker.emptyResponse()
+                        } else {
+                            null
+                        }
+                }
+            )
+        } catch (_: Exception) {
+        }
+
+        view.loadUrl(MainActivity.HOME_URL)
+        webView = view
     }
 
     private fun pollIntervalMs(): Long =
