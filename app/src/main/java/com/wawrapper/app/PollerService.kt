@@ -21,6 +21,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -104,7 +105,7 @@ class PollerService : Service() {
             allowFileAccess = false
             allowContentAccess = false
         }
-        view.setBlockNetworkImage(liteMode())
+        view.settings.blockNetworkImage = liteMode()
 
         val cookieManager = CookieManager.getInstance()
         cookieManager.setAcceptCookie(true)
