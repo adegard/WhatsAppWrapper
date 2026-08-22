@@ -20,6 +20,17 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_bg_alerts"
+        android:checkable="true"
+        android:title="@string/bg_alerts"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_poll_frequency"
+        android:title="@string/alert_frequency"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_clear_session"
         android:title="@string/clear_session"
         app:showAsAction="never" />

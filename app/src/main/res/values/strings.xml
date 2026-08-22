@@ -5,6 +5,14 @@
     <string name="block_trackers">Block ads &amp; trackers</string>
     <string name="lite_mode">Lite mode (skip media)</string>
     <string name="clear_session">Log out &amp; clear session</string>
+    <string name="bg_alerts">New-message alerts (background)</string>
+    <string name="bg_alerts_on">Background alerts enabled</string>
+    <string name="bg_alerts_off">Background alerts disabled</string>
+    <string name="alert_frequency">Alert check frequency</string>
+    <string name="alert_frequency_desc">Minutes between message checks (1–120). Shorter intervals use more battery.</string>
+    <string name="frequency_set">Checking every %1$d min</string>
+    <string name="monitoring_every">Watching for messages every %1$d min</string>
+    <string name="channel_monitor">Background monitor</string>
     <string name="channel_unread">Unread messages</string>
     <string name="channel_unread_desc">Shows the number of unread chats</string>
     <string name="download_started">Downloading %1$s</string>

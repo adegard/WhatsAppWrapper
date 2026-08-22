@@ -15,6 +15,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.text.InputType
 import android.view.Menu
 import android.view.MenuItem
 import android.webkit.CookieManager
@@ -31,6 +32,8 @@ import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.ProgressBar
+import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,6 +41,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class MainActivity : AppCompatActivity() {
 
@@ -46,6 +50,8 @@ class MainActivity : AppCompatActivity() {
         const val PREFS_NAME = "wa_wrapper_prefs"
         const val KEY_BLOCK_TRACKERS = "block_trackers"
         const val KEY_LITE_MODE = "lite_mode"
+        const val KEY_BG_ALERTS = "bg_alerts"
+        const val KEY_POLL_MINUTES = "poll_minutes"
         const val CHANNEL_UNREAD = "unread_messages"
         const val NOTIF_ID_UNREAD = 1001
 
@@ -278,7 +284,7 @@ class MainActivity : AppCompatActivity() {
                 ""
             }
 
-        if (inForeground || unreadCount <= 0) {
+        if (inForeground || unreadCount <= 0 || PollerService.isRunning) {
             NotificationManagerCompat.from(this).cancel(NOTIF_ID_UNREAD)
         } else {
             postUnreadNotification()
@@ -331,6 +337,45 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun startPoller() {
+        ContextCompat.startForegroundService(this, Intent(this, PollerService::class.java))
+    }
+
+    private fun showFrequencyDialog() {
+        val input = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            hint = "5"
+            setText(prefs.getInt(KEY_POLL_MINUTES, 5).toString())
+            setSelectAllOnFocus(true)
+        }
+        val container = FrameLayout(this).apply {
+            val pad = (20 * resources.displayMetrics.density).toInt()
+            setPadding(pad, pad / 2, pad, 0)
+            addView(input)
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.alert_frequency)
+            .setMessage(R.string.alert_frequency_desc)
+            .setView(container)
+            .setPositiveButton(R.string.save) { _, _ ->
+                val minutes = input.text.toString().toIntOrNull()
+                    ?.coerceIn(1, 120) ?: 5
+                prefs.edit().putInt(KEY_POLL_MINUTES, minutes).apply()
+                Toast.makeText(
+                    this,
+                    getString(R.string.frequency_set, minutes),
+                    Toast.LENGTH_SHORT
+                ).show()
+                if (prefs.getBoolean(KEY_BG_ALERTS, false)) {
+                    stopService(Intent(this, PollerService::class.java))
+                    startPoller()
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
     private fun clearSession() {
         CookieManager.getInstance().removeAllCookies(null)
         CookieManager.getInstance().flush()
@@ -370,6 +415,7 @@ class MainActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.menu_main, menu)
         menu.findItem(R.id.action_block_trackers).isChecked = blockTrackers()
         menu.findItem(R.id.action_lite_mode).isChecked = liteMode()
+        menu.findItem(R.id.action_bg_alerts).isChecked = prefs.getBoolean(KEY_BG_ALERTS, false)
         return true
     }
 
@@ -392,6 +438,22 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.action_clear_session -> {
                 clearSession()
+                true
+            }
+            R.id.action_bg_alerts -> {
+                item.isChecked = !item.isChecked
+                prefs.edit().putBoolean(KEY_BG_ALERTS, item.isChecked).apply()
+                if (item.isChecked) {
+                    startPoller()
+                    Toast.makeText(this, R.string.bg_alerts_on, Toast.LENGTH_SHORT).show()
+                } else {
+                    stopService(Intent(this, PollerService::class.java))
+                    Toast.makeText(this, R.string.bg_alerts_off, Toast.LENGTH_SHORT).show()
+                }
+                true
+            }
+            R.id.action_poll_frequency -> {
+                showFrequencyDialog()
                 true
             }
             else -> super.onOptionsItemSelected(item)
