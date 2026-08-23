@@ -66,9 +66,11 @@ class MainActivity : AppCompatActivity() {
             if(!document.getElementById('wawrap-style')){
                 var st=document.createElement('style');
                 st.id='wawrap-style';
-                st.textContent='html,body{overflow-x:hidden!important}'+
-                    '#app{max-width:100vw!important}'+
+                st.textContent='html,body{overflow-x:hidden!important;width:100%!important}'+
+                    '#app{max-width:100vw!important;width:100%!important}'+
+                    '#app div{min-width:0!important}'+
                     '#main{min-width:0!important;width:auto!important;flex:1 1 auto!important}'+
+                    'img,video{max-width:100%!important;height:auto!important}'+
                     '#side{zoom:.44!important;width:auto!important;min-width:0!important;'+
                     'max-width:none!important;background:#0b141a}'+
                     '#side ::-webkit-scrollbar{display:none}';
