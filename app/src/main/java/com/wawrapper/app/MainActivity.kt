@@ -88,9 +88,33 @@ class MainActivity : AppCompatActivity() {
         const val CHANNEL_UNREAD = "unread_messages"
         const val NOTIF_ID_UNREAD = 1001
 
-        const val UA_DESKTOP =
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
-                "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+        const val UA_MOBILE =
+            "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 " +
+                "(KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36"
+
+        fun desktopUa(): String {
+            val version = try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    WebView.getCurrentWebViewPackage()?.versionName
+                } else {
+                    null
+                }
+            } catch (_: Throwable) {
+                null
+            }
+            val clean = version?.takeIf {
+                Regex("^\\d+(\\.\\d+){2,3}$").matches(it)
+            } ?: "126.0.0.0"
+            return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+                "(KHTML, like Gecko) Chrome/$clean Safari/537.36"
+        }
+
+        const val STEALTH_JS =
+            """(function(){
+            if(window.__wawrapStealth){return}
+            window.__wawrapStealth=1;
+            try{Object.defineProperty(navigator,'webdriver',{get:function(){return false}})}catch(e){}
+        })();"""
     }
 
     private lateinit var webView: WebView
@@ -116,6 +140,7 @@ class MainActivity : AppCompatActivity() {
     private val unreadPoller = object : Runnable {
         override fun run() {
             if (isDestroyed || isFinishing) return
+            webView.evaluateJavascript(STEALTH_JS, null)
             if (phoneFit() && !mobileLayout()) {
                 webView.evaluateJavascript(PHONE_FIT_JS, null)
             }
@@ -165,7 +190,7 @@ class MainActivity : AppCompatActivity() {
             useWideViewPort = true
             cacheMode = WebSettings.LOAD_DEFAULT
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
-            userAgentString = if (mobileLayout()) UA_MOBILE else UA_DESKTOP
+            userAgentString = if (mobileLayout()) UA_MOBILE else desktopUa()
             mediaPlaybackRequiresUserGesture = true
             allowFileAccess = false
             allowContentAccess = false

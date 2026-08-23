@@ -48,6 +48,7 @@ class PollerService : Service() {
     private val pollTask = object : Runnable {
         override fun run() {
             val view = webView ?: return
+            view.evaluateJavascript(MainActivity.STEALTH_JS, null)
             view.evaluateJavascript("(document.title || '')") { value ->
                 val count = Regex("\\((\\d+)\\)").find(value)
                     ?.groupValues?.get(1)?.toIntOrNull() ?: 0
@@ -100,7 +101,7 @@ class PollerService : Service() {
             domStorageEnabled = true
             databaseEnabled = true
             cacheMode = WebSettings.LOAD_DEFAULT
-            userAgentString = MainActivity.UA_DESKTOP
+                userAgentString = MainActivity.desktopUa()
             mediaPlaybackRequiresUserGesture = true
             allowFileAccess = false
             allowContentAccess = false
