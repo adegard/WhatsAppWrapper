@@ -85,6 +85,16 @@ class MainActivity : AppCompatActivity() {
                 p.style.flexShrink='0';
                 p.style.background='#0b141a';
             }
+            var s=p?p.previousElementSibling:null;
+            while(s){
+                var w=s.getBoundingClientRect().width;
+                if(w>0&&w<140){
+                    s.style.display='none';
+                    s=s.previousElementSibling;
+                }else{
+                    break;
+                }
+            }
         })();"""
         const val CHANNEL_UNREAD = "unread_messages"
         const val NOTIF_ID_UNREAD = 1001
