@@ -252,7 +252,7 @@ class MainActivity : AppCompatActivity() {
             useWideViewPort = true
             cacheMode = WebSettings.LOAD_DEFAULT
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
-            userAgentString = if (mobileLayout()) mobileUa(this) else desktopUa()
+            userAgentString = if (mobileLayout()) mobileUa(this@MainActivity) else desktopUa()
             mediaPlaybackRequiresUserGesture = true
             allowFileAccess = false
             allowContentAccess = false
