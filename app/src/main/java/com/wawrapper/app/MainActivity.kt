@@ -16,6 +16,9 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.text.InputType
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.graphics.Typeface
 import android.view.Menu
 import android.view.MenuItem
 import android.webkit.CookieManager
@@ -34,6 +37,8 @@ import android.webkit.WebViewClient
 import android.widget.ProgressBar
 import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.ScrollView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -81,22 +86,18 @@ class MainActivity : AppCompatActivity() {
                 p.style.flexShrink='0';
                 p.style.background='#0b141a';
             }
-            if(!window.__wawrapRailHidden){
-                var node=p;
-                var hops=0;
-                while(node&&node!==document.body&&hops<6){
-                    var sib=node.previousElementSibling;
-                    if(sib){
-                        var r=sib.getBoundingClientRect();
-                        if(r.width>0&&r.width<130&&r.height>window.innerHeight*0.5){
-                            sib.style.display='none';
-                            window.__wawrapRailHidden=true;
-                            break;
-                        }
+            var node=p;
+            var hops=0;
+            while(node&&node!==document.body&&hops<6){
+                var sib=node.previousElementSibling;
+                if(sib&&sib.style.display!=='none'){
+                    var r=sib.getBoundingClientRect();
+                    if(r.width>0&&r.width<150&&r.height>window.innerHeight*0.3){
+                        sib.style.display='none';
                     }
-                    node=node.parentElement;
-                    hops++;
                 }
+                node=node.parentElement;
+                hops++;
             }
         })();"""
         const val CHANNEL_UNREAD = "unread_messages"
@@ -499,6 +500,53 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun dumpLayout() {
+        val js = """
+        (function(){
+            var out=[];
+            function walk(el,d){
+                if(!el||d>5||out.length>=90){return}
+                for(var c=el.firstElementChild;c;c=c.nextElementSibling){
+                    var r=c.getBoundingClientRect();
+                    var cls='';
+                    try{cls=(c.getAttribute('class')||'').slice(0,45)}catch(e){}
+                    out.push(c.tagName+'#'+(c.id||'')+'.'+cls+' '+Math.round(r.width)+'x'+Math.round(r.height));
+                    if(r.width>0&&r.width<400&&r.height>0){walk(c,d+1)}
+                    if(out.length>=90){return}
+                }
+            }
+            walk(document.body,0);
+            return out.join('\n');
+        })();
+        """.trimIndent()
+        webView.evaluateJavascript(js) { result ->
+            val text = result
+                .removePrefix("\"")
+                .removeSuffix("\"")
+                .replace("\\n", "\n")
+                .replace("\\\"", "\"")
+                .ifEmpty { "empty" }
+
+            val tv = TextView(this).apply {
+                text = text
+                typeface = Typeface.MONOSPACE
+                textSize = 11f
+                setPadding(40, 24, 40, 24)
+            }
+            val scroll = ScrollView(this).apply { addView(tv) }
+            MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.dump_layout)
+                .setView(scroll)
+                .setPositiveButton(R.string.copy) { _, _ ->
+                    val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    cm.setPrimaryClip(ClipData.newPlainText("layout", text))
+                    Toast.makeText(this, R.string.copied, Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+        }
+    }
+
     private fun clearSession() {
         CookieManager.getInstance().removeAllCookies(null)
         CookieManager.getInstance().flush()
@@ -591,6 +639,10 @@ class MainActivity : AppCompatActivity() {
                 item.isChecked = !item.isChecked
                 prefs.edit().putBoolean(KEY_MOBILE_LAYOUT, item.isChecked).apply()
                 loadHome()
+                true
+            }
+            R.id.action_dump_layout -> {
+                dumpLayout()
                 true
             }
             else -> super.onOptionsItemSelected(item)
