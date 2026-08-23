@@ -70,8 +70,8 @@ class MainActivity : AppCompatActivity() {
                     '#app{max-width:100vw!important}'+
                     '#main{min-width:0!important;width:auto!important;flex:1 1 auto!important}'+
                     '#side{width:184px!important;min-width:184px!important;max-width:184px!important;'+
-                    'flex:0 0 184px!important;transform:scale(.44);transform-origin:top left;'+
-                    'background:#0b141a;z-index:1}'+
+                    'flex:0 0 184px!important;height:227vh!important;transform:scale(.44);'+
+                    'transform-origin:top left;background:#0b141a;z-index:1}'+
                     '#side ::-webkit-scrollbar{display:none}';
                 document.head.appendChild(st);
             }
