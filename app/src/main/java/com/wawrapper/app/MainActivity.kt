@@ -69,9 +69,8 @@ class MainActivity : AppCompatActivity() {
                 st.textContent='html,body{overflow-x:hidden!important}'+
                     '#app{max-width:100vw!important}'+
                     '#main{min-width:0!important;width:auto!important;flex:1 1 auto!important}'+
-                    '#side{width:184px!important;min-width:184px!important;max-width:184px!important;'+
-                    'flex:0 0 184px!important;height:227vh!important;transform:scale(.44);'+
-                    'transform-origin:top left;background:#0b141a;z-index:1}'+
+                    '#side{zoom:.44!important;width:auto!important;min-width:0!important;'+
+                    'max-width:none!important;background:#0b141a}'+
                     '#side ::-webkit-scrollbar{display:none}';
                 document.head.appendChild(st);
             }
@@ -335,7 +334,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun phoneFit() = prefs.getBoolean(KEY_PHONE_FIT, true)
 
-    private fun mobileLayout() = prefs.getBoolean(KEY_MOBILE_LAYOUT, false)
+    private fun mobileLayout() = prefs.getBoolean(KEY_MOBILE_LAYOUT, true)
 
     private fun refreshUnreadUi() {
         supportActionBar?.subtitle =
