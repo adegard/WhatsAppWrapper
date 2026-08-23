@@ -72,6 +72,7 @@ class MainActivity : AppCompatActivity() {
                     '#app div{min-width:0!important}'+
                     '#main{min-width:0!important;width:auto!important;flex:1 1 auto!important}'+
                     'img,video{max-width:100%!important;height:auto!important}'+
+                    '#app .two>header,#app .three>header{display:none!important}'+
                     '#side{zoom:.44!important;width:auto!important;min-width:0!important;'+
                     'max-width:none!important;background:#0b141a}'+
                     '#side ::-webkit-scrollbar{display:none}';
@@ -99,23 +100,10 @@ class MainActivity : AppCompatActivity() {
                 node=node.parentElement;
                 hops++;
             }
-            if(!window.__wawrapRailIcon){
-                var icon=document.querySelector('button [data-icon="chat"],[data-icon="chat"]');
-                if(icon){
-                    var railEl=icon;
-                    while(railEl.parentElement&&railEl.parentElement!==document.body){
-                        var pw=railEl.parentElement.getBoundingClientRect().width;
-                        if(pw>0&&pw<150){
-                            railEl=railEl.parentElement;
-                        }else{
-                            break;
-                        }
-                    }
-                    var rw2=railEl.getBoundingClientRect();
-                    if(rw2.width>0&&rw2.width<150){
-                        railEl.style.display='none';
-                    }
-                    window.__wawrapRailIcon=true;
+            var rails=document.querySelectorAll('#app .two>header,#app .three>header');
+            for(var ri=0;ri<rails.length;ri++){
+                if(rails[ri].style.display!=='none'){
+                    rails[ri].style.display='none';
                 }
             }
         })();"""
