@@ -99,6 +99,25 @@ class MainActivity : AppCompatActivity() {
                 node=node.parentElement;
                 hops++;
             }
+            if(!window.__wawrapRailIcon){
+                var icon=document.querySelector('button [data-icon="chat"],[data-icon="chat"]');
+                if(icon){
+                    var railEl=icon;
+                    while(railEl.parentElement&&railEl.parentElement!==document.body){
+                        var pw=railEl.parentElement.getBoundingClientRect().width;
+                        if(pw>0&&pw<150){
+                            railEl=railEl.parentElement;
+                        }else{
+                            break;
+                        }
+                    }
+                    var rw2=railEl.getBoundingClientRect();
+                    if(rw2.width>0&&rw2.width<150){
+                        railEl.style.display='none';
+                    }
+                    window.__wawrapRailIcon=true;
+                }
+            }
         })();"""
         const val CHANNEL_UNREAD = "unread_messages"
         const val NOTIF_ID_UNREAD = 1001
@@ -503,20 +522,28 @@ class MainActivity : AppCompatActivity() {
     private fun dumpLayout() {
         val js = """
         (function(){
+            var SKIP={SCRIPT:1,STYLE:1,LINK:1,NOSCRIPT:1,META:1};
             var out=[];
+            var root=document.getElementById('app');
+            if(!root){
+                var ms=document.querySelectorAll('div[id^="mount"]');
+                if(ms.length){root=ms[0]}
+            }
+            if(!root){root=document.body}
             function walk(el,d){
-                if(!el||d>5||out.length>=90){return}
+                if(!el||d>9||out.length>=150){return}
                 for(var c=el.firstElementChild;c;c=c.nextElementSibling){
+                    if(SKIP[c.tagName]){continue}
                     var r=c.getBoundingClientRect();
                     var cls='';
-                    try{cls=(c.getAttribute('class')||'').slice(0,45)}catch(e){}
-                    out.push(c.tagName+'#'+(c.id||'')+'.'+cls+' '+Math.round(r.width)+'x'+Math.round(r.height));
-                    if(r.width>0&&r.width<400&&r.height>0){walk(c,d+1)}
-                    if(out.length>=90){return}
+                    try{cls=(c.getAttribute('class')||'').slice(0,40)}catch(e){}
+                    out.push(d+':'+c.tagName+'#'+(c.id||'')+'.'+cls+' '+Math.round(r.width)+'x'+Math.round(r.height));
+                    walk(c,d+1);
+                    if(out.length>=150){return}
                 }
             }
-            walk(document.body,0);
-            return out.join('\n');
+            walk(root,0);
+            return out.length?('ROOT='+(root.id||root.tagName)+'\n'+out.join('\n')):'EMPTY';
         })();
         """.trimIndent()
         webView.evaluateJavascript(js) { result ->
