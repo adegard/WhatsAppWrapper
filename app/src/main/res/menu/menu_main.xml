@@ -31,6 +31,18 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_phone_fit"
+        android:checkable="true"
+        android:title="@string/phone_fit"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_mobile_layout"
+        android:checkable="true"
+        android:title="@string/mobile_layout"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_clear_session"
         android:title="@string/clear_session"
         app:showAsAction="never" />

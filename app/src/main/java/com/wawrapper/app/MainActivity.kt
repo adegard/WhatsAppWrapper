@@ -52,6 +52,36 @@ class MainActivity : AppCompatActivity() {
         const val KEY_LITE_MODE = "lite_mode"
         const val KEY_BG_ALERTS = "bg_alerts"
         const val KEY_POLL_MINUTES = "poll_minutes"
+        const val KEY_PHONE_FIT = "phone_fit"
+        const val KEY_MOBILE_LAYOUT = "mobile_layout"
+
+        const val UA_MOBILE =
+            "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 " +
+                "(KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36"
+
+        private const val PHONE_FIT_JS =
+            """(function(){
+            var side=document.getElementById('side');
+            if(!side||!document.body){return}
+            if(!document.getElementById('wawrap-style')){
+                var st=document.createElement('style');
+                st.id='wawrap-style';
+                st.textContent='html,body{overflow-x:hidden!important}'+
+                    '#app{max-width:100vw!important}'+
+                    '#main{min-width:0!important;width:auto!important;flex:1 1 auto!important;left:0!important}'+
+                    '#side{width:78px!important;min-width:78px!important;max-width:78px!important;'+
+                    'flex:0 0 78px!important;overflow:hidden!important;border-right:none!important}'+
+                    '#side ::-webkit-scrollbar{display:none}';
+                document.head.appendChild(st);
+            }
+            var p=side.parentElement;
+            if(p){
+                p.style.width='78px';
+                p.style.minWidth='78px';
+                p.style.maxWidth='78px';
+                p.style.overflow='hidden';
+            }
+        })();"""
         const val CHANNEL_UNREAD = "unread_messages"
         const val NOTIF_ID_UNREAD = 1001
 
@@ -83,6 +113,9 @@ class MainActivity : AppCompatActivity() {
     private val unreadPoller = object : Runnable {
         override fun run() {
             if (isDestroyed || isFinishing) return
+            if (phoneFit() && !mobileLayout()) {
+                webView.evaluateJavascript(PHONE_FIT_JS, null)
+            }
             webView.evaluateJavascript("(document.title || '')") { value ->
                 val count = Regex("\\((\\d+)\\)").find(value)
                     ?.groupValues?.get(1)?.toIntOrNull() ?: 0
@@ -129,7 +162,7 @@ class MainActivity : AppCompatActivity() {
             useWideViewPort = true
             cacheMode = WebSettings.LOAD_DEFAULT
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
-            userAgentString = UA_DESKTOP
+            userAgentString = if (mobileLayout()) UA_MOBILE else UA_DESKTOP
             mediaPlaybackRequiresUserGesture = true
             allowFileAccess = false
             allowContentAccess = false
@@ -276,6 +309,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun liteMode() = prefs.getBoolean(KEY_LITE_MODE, false)
 
+    private fun phoneFit() = prefs.getBoolean(KEY_PHONE_FIT, true)
+
+    private fun mobileLayout() = prefs.getBoolean(KEY_MOBILE_LAYOUT, false)
+
     private fun refreshUnreadUi() {
         supportActionBar?.subtitle =
             if (unreadCount > 0) {
@@ -416,6 +453,8 @@ class MainActivity : AppCompatActivity() {
         menu.findItem(R.id.action_block_trackers).isChecked = blockTrackers()
         menu.findItem(R.id.action_lite_mode).isChecked = liteMode()
         menu.findItem(R.id.action_bg_alerts).isChecked = prefs.getBoolean(KEY_BG_ALERTS, false)
+        menu.findItem(R.id.action_phone_fit).isChecked = phoneFit()
+        menu.findItem(R.id.action_mobile_layout).isChecked = mobileLayout()
         return true
     }
 
@@ -454,6 +493,18 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.action_poll_frequency -> {
                 showFrequencyDialog()
+                true
+            }
+            R.id.action_phone_fit -> {
+                item.isChecked = !item.isChecked
+                prefs.edit().putBoolean(KEY_PHONE_FIT, item.isChecked).apply()
+                webView.reload()
+                true
+            }
+            R.id.action_mobile_layout -> {
+                item.isChecked = !item.isChecked
+                prefs.edit().putBoolean(KEY_MOBILE_LAYOUT, item.isChecked).apply()
+                webView.reload()
                 true
             }
             else -> super.onOptionsItemSelected(item)

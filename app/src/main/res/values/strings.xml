@@ -9,6 +9,8 @@
     <string name="bg_alerts_on">Background alerts enabled</string>
     <string name="bg_alerts_off">Background alerts disabled</string>
     <string name="alert_frequency">Alert check frequency</string>
+    <string name="phone_fit">Fit to phone (compact list)</string>
+    <string name="mobile_layout">Mobile web layout</string>
     <string name="save">Save</string>
     <string name="alert_frequency_desc">Minutes between message checks (1–120). Shorter intervals use more battery.</string>
     <string name="frequency_set">Checking every %1$d min</string>
