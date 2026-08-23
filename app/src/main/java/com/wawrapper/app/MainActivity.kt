@@ -68,18 +68,21 @@ class MainActivity : AppCompatActivity() {
                 st.id='wawrap-style';
                 st.textContent='html,body{overflow-x:hidden!important}'+
                     '#app{max-width:100vw!important}'+
-                    '#main{min-width:0!important;width:auto!important;flex:1 1 auto!important;left:0!important}'+
-                    '#side{width:78px!important;min-width:78px!important;max-width:78px!important;'+
-                    'flex:0 0 78px!important;overflow:hidden!important;border-right:none!important}'+
+                    '#main{min-width:0!important;width:auto!important;flex:1 1 auto!important}'+
+                    '#side{width:184px!important;min-width:184px!important;max-width:184px!important;'+
+                    'flex:0 0 184px!important;transform:scale(.44);transform-origin:top left;'+
+                    'background:#0b141a;z-index:1}'+
                     '#side ::-webkit-scrollbar{display:none}';
                 document.head.appendChild(st);
             }
             var p=side.parentElement;
             if(p){
-                p.style.width='78px';
-                p.style.minWidth='78px';
-                p.style.maxWidth='78px';
+                p.style.width='82px';
+                p.style.minWidth='82px';
+                p.style.maxWidth='82px';
                 p.style.overflow='hidden';
+                p.style.flexShrink='0';
+                p.style.background='#0b141a';
             }
         })();"""
         const val CHANNEL_UNREAD = "unread_messages"
