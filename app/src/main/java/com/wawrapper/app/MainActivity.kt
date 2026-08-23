@@ -520,7 +520,7 @@ class MainActivity : AppCompatActivity() {
         })();
         """.trimIndent()
         webView.evaluateJavascript(js) { result ->
-            val text = result
+            val dumpText = result
                 .removePrefix("\"")
                 .removeSuffix("\"")
                 .replace("\\n", "\n")
@@ -528,7 +528,7 @@ class MainActivity : AppCompatActivity() {
                 .ifEmpty { "empty" }
 
             val tv = TextView(this).apply {
-                text = text
+                setText(dumpText)
                 typeface = Typeface.MONOSPACE
                 textSize = 11f
                 setPadding(40, 24, 40, 24)
@@ -539,7 +539,7 @@ class MainActivity : AppCompatActivity() {
                 .setView(scroll)
                 .setPositiveButton(R.string.copy) { _, _ ->
                     val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    cm.setPrimaryClip(ClipData.newPlainText("layout", text))
+                    cm.setPrimaryClip(ClipData.newPlainText("layout", dumpText))
                     Toast.makeText(this, R.string.copied, Toast.LENGTH_SHORT).show()
                 }
                 .setNegativeButton(android.R.string.cancel, null)
