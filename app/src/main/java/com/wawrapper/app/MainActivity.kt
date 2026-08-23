@@ -55,10 +55,6 @@ class MainActivity : AppCompatActivity() {
         const val KEY_PHONE_FIT = "phone_fit"
         const val KEY_MOBILE_LAYOUT = "mobile_layout"
 
-        const val UA_MOBILE =
-            "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 " +
-                "(KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36"
-
         private const val PHONE_FIT_JS =
             """(function(){
             var side=document.getElementById('side');
@@ -114,8 +110,8 @@ class MainActivity : AppCompatActivity() {
         const val CHANNEL_UNREAD = "unread_messages"
         const val NOTIF_ID_UNREAD = 1001
 
-        fun desktopUa(): String {
-            val version = try {
+        private fun realWebViewVersion(): String {
+            return try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     WebView.getCurrentWebViewPackage()?.versionName
                 } else {
@@ -123,20 +119,64 @@ class MainActivity : AppCompatActivity() {
                 }
             } catch (_: Throwable) {
                 null
-            }
-            val clean = version?.takeIf {
-                Regex("^\\d+(\\.\\d+){2,3}$").matches(it)
-            } ?: "126.0.0.0"
-            return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
-                "(KHTML, like Gecko) Chrome/$clean Safari/537.36"
+            }?.takeIf { Regex("^\\d+(\\.\\d+){2,3}$").matches(it) } ?: "126.0.0.0"
         }
 
-        const val STEALTH_JS =
-            """(function(){
+        fun desktopUa(): String {
+            return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+                "(KHTML, like Gecko) Chrome/${realWebViewVersion()} Safari/537.36"
+        }
+
+        fun mobileUa(context: Context): String {
+            return WebSettings.getDefaultUserAgent(context)
+                .replace("; wv)", ")")
+                .replace("; wv )", ")")
+        }
+
+        fun waHeaders(isMobile: Boolean): Map<String, String> {
+            val v = realWebViewVersion()
+            val brands = "\"Not.A/Brand\";v=\"24\", \"Chromium\";v=\"$v\", \"Google Chrome\";v=\"$v\""
+            return if (isMobile) {
+                mapOf(
+                    "sec-ch-ua" to brands,
+                    "sec-ch-ua-mobile" to "?1",
+                    "sec-ch-ua-platform" to "\"Android\""
+                )
+            } else {
+                mapOf(
+                    "sec-ch-ua" to brands,
+                    "sec-ch-ua-mobile" to "?0",
+                    "sec-ch-ua-platform" to "\"Windows\""
+                )
+            }
+        }
+
+        fun stealthJs(isMobile: Boolean): String {
+            val ver = realWebViewVersion()
+            val platform = if (isMobile) "Android" else "Windows"
+            val platformVersion = if (isMobile) "\"${Build.VERSION.RELEASE}.0.0\"" else "\"13.0.0\""
+            val model = if (isMobile) "\"${Build.MODEL}\"" else "\"\""
+            val arch = if (isMobile) "arm" else "x86"
+            val mobile = if (isMobile) "true" else "false"
+            return """(function(){
             if(window.__wawrapStealth){return}
             window.__wawrapStealth=1;
             try{Object.defineProperty(navigator,'webdriver',{get:function(){return false}})}catch(e){}
+            try{
+                var V='$ver';
+                var B=[{brand:'Not.A/Brand',version:'24'},{brand:'Chromium',version:V},{brand:'Google Chrome',version:V}];
+                var uad={brands:B,mobile:$mobile,platform:'$platform'};
+                uad.toJSON=function(){return{brands:B,mobile:$mobile,platform:'$platform'}};
+                uad.getHighEntropyValues=function(h){
+                    var o={architecture:'$arch',bitness:'64',model:$model,platform:'$platform',platformVersion:$platformVersion,uaFullVersion:V};
+                    var r={};
+                    for(var k in o){if(h.indexOf(k)>=0){r[k]=o[k]}}
+                    return Promise.resolve(r);
+                };
+                Object.defineProperty(Object.getPrototypeOf(navigator),'userAgentData',{get:function(){return uad},configurable:true});
+            }catch(e){}
         })();"""
+        }
     }
 
     private lateinit var webView: WebView
@@ -162,7 +202,7 @@ class MainActivity : AppCompatActivity() {
     private val unreadPoller = object : Runnable {
         override fun run() {
             if (isDestroyed || isFinishing) return
-            webView.evaluateJavascript(STEALTH_JS, null)
+            webView.evaluateJavascript(stealthJs(mobileLayout()), null)
             if (phoneFit() && !mobileLayout()) {
                 webView.evaluateJavascript(PHONE_FIT_JS, null)
             }
@@ -194,7 +234,7 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState)
         } else {
-            webView.loadUrl(HOME_URL)
+            loadHome()
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -212,7 +252,7 @@ class MainActivity : AppCompatActivity() {
             useWideViewPort = true
             cacheMode = WebSettings.LOAD_DEFAULT
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
-            userAgentString = if (mobileLayout()) UA_MOBILE else desktopUa()
+            userAgentString = if (mobileLayout()) mobileUa(this) else desktopUa()
             mediaPlaybackRequiresUserGesture = true
             allowFileAccess = false
             allowContentAccess = false
@@ -424,6 +464,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun loadHome() {
+        webView.loadUrl(webView.url ?: HOME_URL, waHeaders(mobileLayout()))
+    }
+
     private fun startPoller() {
         ContextCompat.startForegroundService(this, Intent(this, PollerService::class.java))
     }
@@ -474,7 +518,7 @@ class MainActivity : AppCompatActivity() {
         WebStorage.getInstance().deleteAllData()
         unreadCount = 0
         refreshUnreadUi()
-        webView.loadUrl(HOME_URL)
+        loadHome()
     }
 
     override fun onResume() {
@@ -511,7 +555,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_reload -> {
-                webView.reload()
+                loadHome()
                 true
             }
             R.id.action_block_trackers -> {
@@ -522,7 +566,7 @@ class MainActivity : AppCompatActivity() {
             R.id.action_lite_mode -> {
                 item.isChecked = !item.isChecked
                 prefs.edit().putBoolean(KEY_LITE_MODE, item.isChecked).apply()
-                webView.reload()
+                loadHome()
                 true
             }
             R.id.action_clear_session -> {
@@ -548,13 +592,13 @@ class MainActivity : AppCompatActivity() {
             R.id.action_phone_fit -> {
                 item.isChecked = !item.isChecked
                 prefs.edit().putBoolean(KEY_PHONE_FIT, item.isChecked).apply()
-                webView.reload()
+                loadHome()
                 true
             }
             R.id.action_mobile_layout -> {
                 item.isChecked = !item.isChecked
                 prefs.edit().putBoolean(KEY_MOBILE_LAYOUT, item.isChecked).apply()
-                webView.reload()
+                loadHome()
                 true
             }
             else -> super.onOptionsItemSelected(item)

@@ -48,7 +48,7 @@ class PollerService : Service() {
     private val pollTask = object : Runnable {
         override fun run() {
             val view = webView ?: return
-            view.evaluateJavascript(MainActivity.STEALTH_JS, null)
+            view.evaluateJavascript(MainActivity.stealthJs(false), null)
             view.evaluateJavascript("(document.title || '')") { value ->
                 val count = Regex("\\((\\d+)\\)").find(value)
                     ?.groupValues?.get(1)?.toIntOrNull() ?: 0
@@ -145,7 +145,7 @@ class PollerService : Service() {
         } catch (_: Exception) {
         }
 
-        view.loadUrl(MainActivity.HOME_URL)
+        view.loadUrl(MainActivity.HOME_URL, MainActivity.waHeaders(false))
         webView = view
     }
 
