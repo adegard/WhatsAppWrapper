@@ -88,10 +88,6 @@ class MainActivity : AppCompatActivity() {
         const val CHANNEL_UNREAD = "unread_messages"
         const val NOTIF_ID_UNREAD = 1001
 
-        const val UA_MOBILE =
-            "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 " +
-                "(KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36"
-
         fun desktopUa(): String {
             val version = try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
