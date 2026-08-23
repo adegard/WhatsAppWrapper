@@ -82,28 +82,20 @@ class MainActivity : AppCompatActivity() {
                 p.style.background='#0b141a';
             }
             if(!window.__wawrapRailHidden){
-                var names=['Chats','Status','Channels','Communities','Settings','Profile'];
-                var anchor=null;
-                for(var i=0;i<names.length&&!anchor;i++){
-                    anchor=document.querySelector('button[aria-label="'+names[i]+'"]');
-                }
-                if(anchor){
-                    var rail=anchor;
-                    while(rail.parentElement&&rail.parentElement!==document.body){
-                        var rw=rail.parentElement.getBoundingClientRect().width;
-                        if(rw>0&&rw<130){
-                            rail=rail.parentElement;
-                        }else{
+                var node=p;
+                var hops=0;
+                while(node&&node!==document.body&&hops<6){
+                    var sib=node.previousElementSibling;
+                    if(sib){
+                        var r=sib.getBoundingClientRect();
+                        if(r.width>0&&r.width<130&&r.height>window.innerHeight*0.5){
+                            sib.style.display='none';
+                            window.__wawrapRailHidden=true;
                             break;
                         }
                     }
-                    var rr=rail.getBoundingClientRect();
-                    if(rr.width>0&&rr.width<130&&rr.height>window.innerHeight*0.5){
-                        rail.style.display='none';
-                        window.__wawrapRailHidden=true;
-                    }else{
-                        window.__wawrapRailHidden=true;
-                    }
+                    node=node.parentElement;
+                    hops++;
                 }
             }
         })();"""
