@@ -17,3 +17,7 @@ Use the APK from [Releases](../../releases).
 ## Building
 
 Open the project in Android Studio and run the `app` module, or build from the command line with Gradle.
+
+---
+
+For an overview of all my other projects, see https://adegard.github.io/blog/
